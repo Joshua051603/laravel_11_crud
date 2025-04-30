@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -15,48 +17,47 @@ class AuthController extends Controller
         return view('auth.login');  // Looks for resources/views/auth/login.blade.php
     }
 
+    // Show the registration form
+    public function showRegisterForm()
+    {
+        return view('auth.register');  // Looks for resources/views/auth/register.blade.php
+    }
+
     // Handle login logic
     public function login(Request $request)
     {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+        $credentials = $request->validate([
+            'username' => ['required', 'string'],
+            'password' => ['required']
         ]);
 
-        $credentials = $request->only('username', 'password');
-
         if (Auth::attempt($credentials)) {
-            return redirect()->intended('/dashboard');
+            $request->session()->regenerate();
+            return redirect()->intended('products');
         }
 
-        return back()->withErrors(['username' => 'Invalid username or password.']);
-    }
-
-    // Show the registration form
-    public function showRegistrationForm()
-    {
-        return view('auth.register');  // Looks for resources/views/auth/register.blade.php
+        return back()->withErrors([
+            'username' => 'The provided credentials do not match our records.'
+        ])->onlyInput('username');
     }
 
     // Handle registration logic
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|unique:users|max:255',
-            'password' => 'required|confirmed|min:8',
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', Password::defaults()]
         ]);
 
-        // Create a new user
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password)
         ]);
 
-        Auth::login($user);
-
-        return redirect('/dashboard');
+        return redirect()->route('login')
+            ->with('success', 'Registration successful! Please login to continue.');
     }
 
     // Handle logout
@@ -65,7 +66,6 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect('/');
     }
 }
