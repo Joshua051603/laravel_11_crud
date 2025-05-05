@@ -20,9 +20,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-// Home Route
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 
