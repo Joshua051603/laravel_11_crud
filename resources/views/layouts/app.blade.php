@@ -17,7 +17,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="m-0">Simple Laravel 11 CRUD Application Tutorial</h3>
 
-            @if (!Route::is('login'))
+            @if (!Route::is('login') && !Route::is('register'))
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-danger btn-sm">
