@@ -21,6 +21,7 @@ Product</a>
  <th scope="col">Name</th>
  <th scope="col">Quantity</th>
  <th scope="col">Price</th>
+ <th scope="col">Image Path</th>
  <th scope="col">Action</th>
  </tr>
  </thead>
@@ -33,6 +34,15 @@ Product</a>
  <td>{{ $product->name }}</td>
  <td>{{ $product->quantity }}</td>
  <td>{{ $product->price }}</td>
+ <td>
+    @if($product->image)
+        <div style="max-width: 200px; word-break: break-all;">
+            {{ asset('storage/' . $product->image) }}
+        </div>
+    @else
+        No image
+    @endif
+</td>
  <td>
  <form action="{{ 
 route('products.destroy', $product->id) }}" method="post">
